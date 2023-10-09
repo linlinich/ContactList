@@ -13,6 +13,9 @@ struct ContactsScreen: View {
     @State private var singleSelection: UUID?
     @Environment(\.dismiss) var dismiss
     @Binding var selected: [String]
+    @State private var searchText: String = ""
+    @State private var isSearchBarPresented = false
+    @State private var showSearchBar = false
     
     var body: some View {
         NavigationStack {
@@ -33,15 +36,18 @@ struct ContactsScreen: View {
                                         .padding(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 8))
                                     ) {
                                         ForEach(contacts[key] ?? []) { contact in
-                                            ContactListCell(contact: contact, isSelected: contact.isSelected)
-                                                
+                                            if contact.phoneNumber.count > 1 {
+                                                ContactListCell(contact: contact, isSelected: false, cellStyle: .multiNumber)
+                                            } else {
+                                                ContactListCell(contact: contact, isSelected: false, cellStyle: .singleNumber)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                         Button(action: {
-                            selected = contacts.values.flatMap({$0}).filter({$0.isSelected == true }).flatMap({$0.phoneNumber})
+                            selected = contacts.values.flatMap({$0}).flatMap({$0.phoneNumber}).filter({$0.value == true}).map({$0.key})
                             dismiss()
                         }) {
                             selectButton
@@ -54,6 +60,23 @@ struct ContactsScreen: View {
             })
             .navigationTitle("Contacts")
             .navigationBarTitleDisplayMode(.inline)
+            //.searchable(text: $searchText, isPresented: $showSearchBar, promt: "Поиск")
+            .searchable(text: $searchText, prompt: "Поиск") {
+                if searchResults.isEmpty {
+                    Text("Нет результатов по запросу \(searchText)")
+                }
+                ForEach(searchResults) { contact in
+                    if contact.phoneNumber.count > 1 {
+                        ContactListCell(contact: contact, isSelected: false, cellStyle: .multiNumber).searchCompletion(contact)
+                            .listRowInsets(EdgeInsets())
+                    } else {
+                        ContactListCell(contact: contact, isSelected: false, cellStyle: .singleNumber).searchCompletion(contact)
+                            .listRowInsets(EdgeInsets())
+                    }
+                }
+                .listStyle(.plain)
+                
+            }
             .navigationBarItems(leading:
             HStack {
                 Button("Close") {
@@ -64,6 +87,7 @@ struct ContactsScreen: View {
             HStack {
                 
                 Button(action: {
+                    showSearchBar.toggle()
                 }) {
                     searchButton
                 }
@@ -91,5 +115,13 @@ struct ContactsScreen: View {
         Image("searchImage")
             .resizable()
             .frame(width: 24, height: 24)
+    }
+    
+    var searchResults: [PhoneContact] {
+        if !searchText.isEmpty {
+            return state.contacts.values.flatMap({$0}).filter({$0.name.contains(searchText) || $0.phoneNumber.keys.reduce("", +).contains(searchText)})
+        } else {
+            return []
+        }
     }
 }

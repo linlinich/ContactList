@@ -52,7 +52,7 @@ class PhoneContactsService {
             for contact in contacts {
                 if !contact.phoneNumbers.isEmpty {
                     let contact = PhoneContact(contact: contact)
-                    allContacts[String((contact.name?.uppercased() ?? "U").prefix(1)), default: []].append(contact)
+                    allContacts[String(contact.name.uppercased().prefix(1)), default: []].append(contact)
                 }
             }
             return allContacts

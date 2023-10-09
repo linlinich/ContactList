@@ -9,16 +9,16 @@ import Foundation
 import ContactsUI
 
 final class PhoneContact: Identifiable {
+    
 
     let id = UUID()
-    var name: String?
+    var name: String
     var avatarImage: UIImage?
-    var phoneNumber: [String] = [String]()
-    var isSelected: Bool = false
+    var phoneNumber: [String: Bool] = [:]
     
     init(contact: CNContact) {
         if contact.givenName.count + contact.familyName.count == 0 {
-            name = nil
+            name = "Unnamed"
         } else {
             name = contact.givenName + " " + contact.familyName
         }
@@ -33,8 +33,14 @@ final class PhoneContact: Identifiable {
             //регулярное выражение для номера телефона
             let formattedNumber = digitsOnly.replacingOccurrences(of: "(\\d{1})(\\d{3})(\\d{3})(\\d{2})(\\d{2})", with: "+7 $2 $3 $4 $5", options: .regularExpression)
             
-            phoneNumber.append(formattedNumber)
+            phoneNumber[formattedNumber] = false
         }
+    }
+    
+    init(name: String, avatarImage: UIImage? = nil, phoneNumbers: [String: Bool]) {
+        self.name = name
+        self.avatarImage = avatarImage
+        self.phoneNumber = phoneNumbers
     }
 }
 

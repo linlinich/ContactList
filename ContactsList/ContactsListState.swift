@@ -6,9 +6,6 @@
 //
 import SwiftUI
 
-// Есть required запросы без которых экран не сможет запуститься
-// Есть blocking запросы в ожидание которых отрисовываем шиммер
-// Есть background запросы которые выполняются и после обновляют UI по принципу добавления компонента
 
 @MainActor
 final class ContactsListState: ObservableObject {
